@@ -1,7 +1,7 @@
 {
   "name": "character-wiki-explorer",
   "version": "1.0.0",
-  "description": "An unofficial Rick and Morty wiki: every character, episode and location of the public Rick and Morty API as fast static pages, with instant search and a WebGL portal.",
+  "description": "Rick and Morty fan wiki built with Astro and React: characters, episodes and locations with instant search.",
   "author": "DamReboot IT Damian Chabracki",
   "license": "MIT",
   "private": true,

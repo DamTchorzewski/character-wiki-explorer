@@ -20,7 +20,7 @@ hyphens, at most 20.
 **Description:**
 
 ```text
-An unofficial Rick and Morty wiki built with Astro and React: every character, episode and location of the Rick and Morty API as fast static pages, with instant search, filters, a WebGL portal and light and dark themes.
+Rick and Morty fan wiki built with Astro and React: characters, episodes and locations with instant search.
 ```
 
 **Website:**
@@ -38,7 +38,7 @@ rick-and-morty rick-and-morty-api wiki fan-site astro react typescript webgl sta
 The same with the GitHub CLI:
 
 ```bash
-gh repo edit DamTchorzewski/character-wiki-explorer --homepage "https://damtchorzewski.github.io/character-wiki-explorer/" --description "An unofficial Rick and Morty wiki built with Astro and React: every character, episode and location of the Rick and Morty API as fast static pages, with instant search, filters, a WebGL portal and light and dark themes." --add-topic rick-and-morty --add-topic rick-and-morty-api --add-topic wiki --add-topic fan-site --add-topic astro --add-topic react --add-topic typescript --add-topic webgl --add-topic static-site --add-topic search --add-topic accessibility --add-topic wcag --add-topic dark-mode --add-topic responsive-design --add-topic github-pages --add-topic front-end
+gh repo edit DamTchorzewski/character-wiki-explorer --homepage "https://damtchorzewski.github.io/character-wiki-explorer/" --description "Rick and Morty fan wiki built with Astro and React: characters, episodes and locations with instant search." --add-topic rick-and-morty --add-topic rick-and-morty-api --add-topic wiki --add-topic fan-site --add-topic astro --add-topic react --add-topic typescript --add-topic webgl --add-topic static-site --add-topic search --add-topic accessibility --add-topic wcag --add-topic dark-mode --add-topic responsive-design --add-topic github-pages --add-topic front-end
 ```
 
 ## Settings (state on 2026-11-21)

@@ -7,7 +7,7 @@ import { toCharacter, toEpisode, toLocation } from "./normalize";
 import type { ApiCharacter, ApiEpisode, ApiLocation, ApiPage, Wiki } from "./types";
 
 export const API = "https://rickandmortyapi.com/api";
-const CACHE_FILE = path.resolve("node_modules/.cache/rick-and-morty-wiki/wiki.json");
+const CACHE_FILE = path.resolve("node_modules/.cache/character-wiki-explorer/wiki.json");
 const CACHE_HOURS = 24;
 
 async function getJson<T>(url: string, attempt = 1): Promise<T> {

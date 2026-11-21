@@ -3,7 +3,7 @@ import react from "@astrojs/react";
 import { defineConfig } from "astro/config";
 
 // SITE_URL (set by the deploy workflow from the Pages settings) gives the origin and the base path,
-// e.g. https://damtchorzewski.github.io/rick-and-morty-wiki/ → base "/rick-and-morty-wiki/".
+// e.g. https://damtchorzewski.github.io/character-wiki-explorer/ → base "/character-wiki-explorer/".
 const siteUrl = process.env.SITE_URL ? new URL(process.env.SITE_URL) : undefined;
 
 export default defineConfig({

@@ -9,7 +9,7 @@
 # The build fetches every character, episode and location from the public Rick and Morty API
 # (https://rickandmortyapi.com, no key) and writes about 1,000 static pages.
 # The public address is read from the Pages settings (configure-pages) and handed to the build as SITE_URL,
-# so the base path /rick-and-morty-wiki/ needs no edit. A custom domain: set the repository variable SITE_URL.
+# so the base path /character-wiki-explorer/ needs no edit. A custom domain: set the repository variable SITE_URL.
 # Secrets: none. Variables: SITE_URL (optional). Settings → Pages → Source = GitHub Actions.
 # To pause: Actions → this workflow → ⋯ → Disable workflow.
 # Standard: reops/standards/workflows.md (global, outside this repo)

@@ -9,7 +9,7 @@ if (!raw) {
 const base = raw.endsWith("/") ? raw : `${raw}/`;
 
 const checks = [
-  { path: "", status: 200, contains: "Who are you looking for?" },
+  { path: "", status: 200, contains: "Find anyone in the multiverse." },
   { path: "characters/", status: 200, contains: "<main" },
   { path: "characters/1/", status: 200, contains: "Rick Sanchez" },
   { path: "episodes/1/", status: 200, contains: "Pilot" },

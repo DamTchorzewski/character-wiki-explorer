@@ -10,7 +10,7 @@ rickandmortyapi.com ──build──▶ src/lib/api.ts ──▶ Wiki { charact
                                    │                         │
                                    │                         ├─▶ pages/*.astro       1,008 HTML pages
                                    │                         └─▶ pages/data/*.json   indexes for the browser
-                                   └─ node_modules/.cache/rick-and-morty-wiki/wiki.json (one day)
+                                   └─ node_modules/.cache/character-wiki-explorer/wiki.json (one day)
 ```
 
 - `getWiki()` (`src/lib/api.ts`) asks each resource for its count, then fetches the records in batches of 200 ids

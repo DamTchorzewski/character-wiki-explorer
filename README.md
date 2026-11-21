@@ -11,7 +11,7 @@
 
 ## About
 
-<a href="https://damtchorzewski.github.io/rick-and-morty-wiki/"><img src="docs/images/open-site.png" alt="Open the live site" width="130"></a>
+<a href="https://damtchorzewski.github.io/character-wiki-explorer/"><img src="docs/images/open-site.png" alt="Open the live site" width="130"></a>
 
 An **unofficial Rick and Morty wiki**. Every character, episode and location of the public
 [Rick and Morty API](https://rickandmortyapi.com/) is a fast static page, and everything is one search away. The
@@ -56,8 +56,8 @@ The content, the code and the commits are in English.
 ## Quick start
 
 ```bash
-git clone https://github.com/DamTchorzewski/rick-and-morty-wiki.git
-cd rick-and-morty-wiki
+git clone https://github.com/DamTchorzewski/character-wiki-explorer.git
+cd character-wiki-explorer
 pnpm install
 pnpm dev          # http://localhost:4321
 ```
@@ -139,7 +139,7 @@ to `main` also publishes to GitHub Pages and runs `pnpm health`.
 | [docs/deployment.md](docs/deployment.md)     | GitHub Pages, the workflow, the health check, rollback              |
 | [docs/repository.md](docs/repository.md)     | name, GitHub description, topics and the settings made by hand      |
 
-The README images (`docs/images/`) are regenerated with `tools/readme-images`, profile `rick-and-morty-wiki`; the
+The README images (`docs/images/`) are regenerated with `tools/readme-images`, profile `character-wiki-explorer`; the
 working shots go to `.scratch/`. The documents in `docs/` are in English.
 
 ---

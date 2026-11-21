@@ -1,7 +1,7 @@
 # Deployment
 
 The site is static (`pnpm build` writes `dist/`) and is published to GitHub Pages by `.github/workflows/deploy.yml`, at
-<https://damtchorzewski.github.io/rick-and-morty-wiki/>. This is level 1 of the workflow standard: one workflow, no
+<https://damtchorzewski.github.io/character-wiki-explorer/>. This is level 1 of the workflow standard: one workflow, no
 schedule. How the data is built is in [architecture.md](architecture.md).
 
 ## What runs when
@@ -28,7 +28,7 @@ No secrets. The Pages environment `github-pages` accepts deployments from `main`
 
 `pnpm health` (`scripts/health.mjs`) requests the home page, the character list, one character, one episode, one
 location, both JSON indexes (expects 200 and a known text) and a page that does not exist (expects 404). It is
-read-only and has no dependencies: `SITE_URL=https://damtchorzewski.github.io/rick-and-morty-wiki/ pnpm health`.
+read-only and has no dependencies: `SITE_URL=https://damtchorzewski.github.io/character-wiki-explorer/ pnpm health`.
 
 ## Local build
 
@@ -37,7 +37,7 @@ pnpm build && pnpm preview
 ```
 
 Without `SITE_URL` the build is made for the root of a host. To test the project-page path, run
-`SITE_URL=https://example.github.io/rick-and-morty-wiki/ pnpm build`.
+`SITE_URL=https://example.github.io/character-wiki-explorer/ pnpm build`.
 
 ## Pausing and rollback
 

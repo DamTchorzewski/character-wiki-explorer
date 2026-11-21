@@ -1,0 +1,189 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getWiki } from "../../lib/api";
+import { count, formatDate, href } from "../../lib/format";
+
+const { episodes } = await getWiki();
+const seasons = [...new Set(episodes.map((e) => e.season))].map((season) => {
+  const list = episodes.filter((e) => e.season === season);
+  return { season, list, from: list[0].airDate, to: list[list.length - 1].airDate };
+});
+const month = new Intl.DateTimeFormat("en", { month: "long", year: "numeric", timeZone: "UTC" });
+const monthOf = (iso: string) => month.format(new Date(`${iso}T00:00:00Z`));
+---
+
+<Base
+  title="Episodes"
+  description={`All ${episodes.length} Rick and Morty episodes by season, with air dates and the characters in each.`}
+>
+  <div class="wrap">
+    <header class="page-head">
+      <h1>Episodes</h1>
+      <p>
+        {count(episodes.length, "episode")} over {count(seasons.length, "season")}, in the order
+        they aired. Open one to see who is in it.
+      </p>
+    </header>
+
+    <nav class="season-jump" aria-label="Seasons">
+      <ul>
+        {seasons.map(({ season }) => (
+          <li>
+            <a class="chip" href={`#season-${season}`}>
+              Season {season}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    {seasons.map(({ season, list, from, to }, i) => (
+      <section
+        class:list={["season", { "lazy-section": i > 0 }]}
+        id={`season-${season}`}
+        aria-labelledby={`season-${season}-title`}
+      >
+        <header class="season-head">
+          <h2 id={`season-${season}-title`}>Season {season}</h2>
+          <p>
+            {count(list.length, "episode")}, {monthOf(from)} to {monthOf(to)}
+          </p>
+        </header>
+        <ol class="episode-list">
+          {list.map((e) => (
+            <li>
+              <span class="num" aria-hidden="true">
+                {String(e.number).padStart(2, "0")}
+              </span>
+              <div class="what">
+                <h3>
+                  <a href={href(`episodes/${e.id}/`)}>{e.name}</a>
+                </h3>
+                <p>
+                  <span class="visually-hidden">Episode {e.code}, </span>
+                  Aired {formatDate(e.airDate)}
+                </p>
+              </div>
+              <span class="cast">{count(e.characters.length, "character")}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))}
+  </div>
+</Base>
+
+<style>
+  .season-jump ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0;
+    list-style: none;
+    margin-bottom: clamp(2rem, 1.5rem + 2vw, 3rem);
+  }
+  .season-jump .chip {
+    min-height: 44px;
+    padding-inline: 1.1rem;
+  }
+  .season {
+    display: grid;
+    grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+    gap: 1.5rem clamp(1.5rem, 1rem + 3vw, 4rem);
+    padding-block: 2.25rem;
+    border-top: 1px solid var(--line);
+  }
+  .season-head {
+    position: sticky;
+    top: calc(var(--header-h) + 1.5rem);
+    align-self: start;
+    display: grid;
+    gap: 0.5rem;
+  }
+  .season-head h2 {
+    font-size: var(--step-4);
+  }
+  .season-head p {
+    color: var(--ink-soft);
+  }
+  .episode-list {
+    padding: 0;
+    list-style: none;
+    display: grid;
+  }
+  .episode-list li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 3.5rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1rem 1rem 0.5rem;
+    border-radius: var(--radius-m);
+  }
+  .episode-list li + li {
+    box-shadow: 0 -1px 0 var(--line);
+  }
+  .episode-list li:hover {
+    background: var(--bg-raised);
+    box-shadow: none;
+  }
+  .episode-list li:hover + li {
+    box-shadow: none;
+  }
+  .num {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    font-weight: 300;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .what h3 {
+    font-family: var(--font-body);
+    font-size: var(--step-1);
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+  .what a {
+    text-decoration: none;
+  }
+  .what a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+  .what a:focus-visible {
+    outline: none;
+  }
+  .episode-list li:has(a:focus-visible) {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+  .what p {
+    color: var(--ink-soft);
+    font-size: var(--step--1);
+  }
+  .cast {
+    color: var(--ink-soft);
+    font-size: var(--step--1);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 860px) {
+    .season {
+      grid-template-columns: 1fr;
+    }
+    .season-head {
+      position: static;
+    }
+  }
+  @media (max-width: 520px) {
+    .episode-list li {
+      grid-template-columns: 2.6rem minmax(0, 1fr);
+    }
+    .cast {
+      grid-column: 2;
+    }
+  }
+</style>

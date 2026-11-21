@@ -1,0 +1,134 @@
+---
+import type { GetStaticPaths } from "astro";
+import CharacterTile from "../../components/CharacterTile";
+import Base from "../../layouts/Base.astro";
+import { getWiki } from "../../lib/api";
+import { count, formatDate, href } from "../../lib/format";
+import type { Character, Episode } from "../../lib/types";
+
+export const getStaticPaths = (async () => {
+  const { characters, episodes } = await getWiki();
+  const byId = new Map(characters.map((c) => [c.id, c]));
+  return episodes.map((episode, i) => ({
+    params: { id: String(episode.id) },
+    props: {
+      episode,
+      cast: episode.characters.map((id) => byId.get(id)).filter((c): c is Character => !!c),
+      prev: episodes[i - 1] ?? null,
+      next: episodes[i + 1] ?? null,
+    },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  episode: Episode;
+  cast: Character[];
+  prev: Episode | null;
+  next: Episode | null;
+}
+
+const { episode: e, cast, prev, next } = Astro.props;
+const aired = formatDate(e.airDate);
+---
+
+<Base
+  title={`${e.name} (${e.code})`}
+  description={`${e.name}, season ${e.season} episode ${e.number} of Rick and Morty, aired ${aired}, with ${count(cast.length, "character")}.`}
+>
+  <div class="wrap">
+    <a class="back" href={href(`episodes/#season-${e.season}`)}>
+      All episodes
+    </a>
+
+    <header class="episode-head">
+      <p class="code" aria-hidden="true">
+        <span>S{String(e.season).padStart(2, "0")}</span>
+        <span>E{String(e.number).padStart(2, "0")}</span>
+      </p>
+      <div>
+        <h1>{e.name}</h1>
+        <p class="meta">
+          Season {e.season}, episode {e.number}. Aired {aired}.
+        </p>
+      </div>
+    </header>
+
+    <section aria-labelledby="cast">
+      <h2 id="cast" class="section-title">
+        {count(cast.length, "character")} in this episode
+      </h2>
+      <ul class="tiles">
+        {cast.map((c, i) => (
+          <li>
+            <CharacterTile
+              base={href()}
+              id={c.id}
+              name={c.name}
+              status={c.status}
+              species={c.species}
+              eager={i < 4}
+            />
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <nav class="pager" aria-label="Other episodes">
+      {prev && (
+        <a href={href(`episodes/${prev.id}/`)} rel="prev">
+          <small>Previous episode, {prev.code}</small>
+          <strong>{prev.name}</strong>
+        </a>
+      )}
+      {next && (
+        <a class="next" href={href(`episodes/${next.id}/`)} rel="next">
+          <small>Next episode, {next.code}</small>
+          <strong>{next.name}</strong>
+        </a>
+      )}
+    </nav>
+  </div>
+</Base>
+
+<style>
+  .episode-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: end;
+    gap: clamp(1.25rem, 1rem + 3vw, 3.5rem);
+    margin-bottom: clamp(2.5rem, 2rem + 3vw, 4.5rem);
+    padding-bottom: clamp(1.75rem, 1rem + 2vw, 2.75rem);
+    border-bottom: 1px solid var(--line);
+  }
+  /* the episode code as a large two-line figure, the one display moment of the page */
+  .code {
+    display: grid;
+    font-family: var(--font-display);
+    font-size: clamp(3.4rem, 2rem + 6vw, 7.5rem);
+    font-weight: 200;
+    line-height: 0.88;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+  }
+  .episode-head h1 {
+    font-size: var(--step-5);
+    font-weight: 650;
+  }
+  .meta {
+    margin-top: 0.75rem;
+    color: var(--ink-soft);
+    font-size: var(--step-1);
+  }
+  @media (max-width: 640px) {
+    .episode-head {
+      grid-template-columns: 1fr;
+      align-items: start;
+    }
+    .code {
+      grid-template-columns: auto auto;
+      justify-content: start;
+      gap: 0.3em;
+    }
+  }
+</style>

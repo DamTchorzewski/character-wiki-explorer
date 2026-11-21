@@ -1,0 +1,61 @@
+---
+import bodyFont from "@fontsource-variable/hanken-grotesk/files/hanken-grotesk-latin-wght-normal.woff2?url";
+import displayFont from "@fontsource-variable/unbounded/files/unbounded-latin-wght-normal.woff2?url";
+import SiteFooter from "../components/SiteFooter.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import { href } from "../lib/format";
+import "../styles/global.css";
+import "../styles/search.css";
+
+interface Props {
+  title: string;
+  description: string;
+  /** An image for link previews (a character portrait); none on the list pages. */
+  image?: string;
+}
+
+const { title, description, image } = Astro.props;
+const fullTitle = title === "Rick and Morty Wiki" ? title : `${title} | Rick and Morty Wiki`;
+const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    {image && <meta property="og:image" content={image} />}
+    <meta name="theme-color" content="#eef2ef" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b1820" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href={href("favicon.svg")} type="image/svg+xml" />
+    <link rel="preload" href={displayFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={bodyFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preconnect" href="https://rickandmortyapi.com" />
+    <script is:inline>
+      // The stored theme before the first paint, so a dark choice never flashes light.
+      try {
+        const theme = localStorage.getItem("theme");
+        if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+      } catch {
+        // storage blocked: the system setting decides
+      }
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">
+      Skip to content
+    </a>
+    <SiteHeader />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <SiteFooter />
+  </body>
+</html>

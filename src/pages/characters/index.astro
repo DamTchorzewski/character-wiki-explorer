@@ -1,0 +1,38 @@
+---
+import CharacterExplorer from "../../components/CharacterExplorer";
+import Base from "../../layouts/Base.astro";
+import { getWiki } from "../../lib/api";
+import { EMPTY_QUERY, facet, filterCharacters, paginate } from "../../lib/filter";
+import { href, number } from "../../lib/format";
+import { characterRow } from "../../lib/normalize";
+import "../../styles/explorer.css";
+
+const { characters } = await getWiki();
+const rows = characters.map(characterRow);
+const initial = paginate(filterCharacters(rows, EMPTY_QUERY), 1);
+const species = facet(rows, (r) => r.species);
+const genders = facet(rows, (r) => r.gender).map((g) => g.value);
+---
+
+<Base
+  title="Characters"
+  description={`Search and filter all ${number(rows.length)} Rick and Morty characters by name, status, gender and species.`}
+>
+  <div class="wrap">
+    <header class="page-head">
+      <h1>Characters</h1>
+      <p>
+        {number(rows.length)} people, aliens, robots and other things from across the multiverse.
+        Search by name or narrow the list by status, gender and species.
+      </p>
+    </header>
+    <CharacterExplorer
+      client:load
+      base={href()}
+      initial={initial}
+      total={rows.length}
+      species={species}
+      genders={genders}
+    />
+  </div>
+</Base>

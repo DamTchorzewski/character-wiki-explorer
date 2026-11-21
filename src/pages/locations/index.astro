@@ -1,0 +1,113 @@
+---
+import LocationExplorer from "../../components/LocationExplorer";
+import Base from "../../layouts/Base.astro";
+import { getWiki } from "../../lib/api";
+import { facet } from "../../lib/filter";
+import { href, number } from "../../lib/format";
+import { locationRow } from "../../lib/normalize";
+import "../../styles/explorer.css";
+
+const { locations } = await getWiki();
+const rows = locations.map(locationRow);
+const types = facet(rows, (r) => r.type);
+const dimensions = new Set(rows.map((r) => r.dimension).filter((d) => d && d !== "unknown")).size;
+---
+
+<Base
+  title="Locations"
+  description={`All ${rows.length} Rick and Morty locations: planets, space stations, dimensions and more, with who lives there.`}
+>
+  <div class="wrap">
+    <header class="page-head">
+      <h1>Locations</h1>
+      <p>
+        {number(rows.length)} places across {number(dimensions)} named dimensions, from Earth
+        (C-137) to the inside of a microverse battery.
+      </p>
+    </header>
+    <LocationExplorer client:load base={href()} rows={rows} types={types} />
+  </div>
+</Base>
+
+<style is:global>
+  .location-search .type-select {
+    flex: 0 0 15rem;
+    display: flex;
+  }
+  .location-search .select {
+    min-height: 60px;
+    border-radius: 999px;
+    padding-left: 1.2rem;
+  }
+  .places {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr));
+    gap: 1rem;
+    padding: 0;
+    list-style: none;
+  }
+  .place {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 0.5rem;
+    padding: 1.2rem 1.3rem 1.1rem;
+    border-radius: var(--radius-m);
+    border: 1px solid var(--line);
+    background: var(--bg-raised);
+  }
+  .place:hover {
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow);
+  }
+  .place:has(a:focus-visible) {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+  .place h3 {
+    font-family: var(--font-body);
+    font-size: var(--step-1);
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.25;
+  }
+  .place a {
+    text-decoration: none;
+  }
+  .place a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+  .place a:focus-visible {
+    outline: none;
+  }
+  .place-kind {
+    display: grid;
+    font-weight: 600;
+    font-size: var(--step--1);
+  }
+  .place-dim {
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .place-count {
+    padding-top: 0.7rem;
+    border-top: 1px solid var(--line);
+    font-size: var(--step--1);
+    font-weight: 600;
+    color: var(--accent);
+  }
+  @media (max-width: 640px) {
+    .location-search {
+      flex-wrap: wrap;
+    }
+    .location-search .type-select {
+      flex-basis: 100%;
+    }
+    .location-search .select {
+      min-height: 48px;
+    }
+  }
+</style>

@@ -1,0 +1,77 @@
+---
+import Base from "../layouts/Base.astro";
+import { href } from "../lib/format";
+---
+
+<Base title="Page not found" description="This page is not in the wiki.">
+  <div class="wrap lost">
+    <div class="ring" aria-hidden="true"></div>
+    <h1>This page fell through a portal.</h1>
+    <p>
+      The address does not match any character, episode or location in the wiki. Check it for a
+      typo, or start again from one of the lists.
+    </p>
+    <ul>
+      <li>
+        <a class="button button-primary" href={href()}>
+          Home
+        </a>
+      </li>
+      <li>
+        <a class="button" href={href("characters/")}>
+          Characters
+        </a>
+      </li>
+      <li>
+        <a class="button" href={href("episodes/")}>
+          Episodes
+        </a>
+      </li>
+      <li>
+        <a class="button" href={href("locations/")}>
+          Locations
+        </a>
+      </li>
+    </ul>
+  </div>
+</Base>
+
+<style>
+  .lost {
+    display: grid;
+    justify-items: center;
+    gap: 1.25rem;
+    text-align: center;
+    padding-block: 2rem 4rem;
+  }
+  .ring {
+    width: 160px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 14px solid transparent;
+    background:
+      linear-gradient(var(--bg), var(--bg)) padding-box,
+      conic-gradient(from 90deg, var(--portal-a), var(--portal-b), var(--portal-c), var(--portal-a))
+        border-box;
+    box-shadow: 0 0 60px -10px var(--portal-glow);
+    margin-bottom: 1rem;
+  }
+  h1 {
+    font-size: var(--step-4);
+    max-width: 22ch;
+  }
+  p {
+    max-width: 36rem;
+    color: var(--ink-soft);
+    font-size: var(--step-1);
+  }
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 0;
+    margin-top: 0.75rem;
+    list-style: none;
+  }
+</style>

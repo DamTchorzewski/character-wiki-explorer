@@ -1,0 +1,4 @@
+# esbuild ships a native binary that Astro and Vite need; nothing else may run install scripts.
+allowBuilds:
+  esbuild: true
+  sharp: false

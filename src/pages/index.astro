@@ -1,0 +1,583 @@
+---
+import CharacterTile from "../components/CharacterTile";
+import HeroSearch from "../components/HeroSearch";
+import Portal from "../components/Portal.astro";
+import Base from "../layouts/Base.astro";
+import { getWiki } from "../lib/api";
+import { count, href, number, year } from "../lib/format";
+
+const { characters, episodes, locations } = await getWiki();
+
+// the most-seen characters for the first shelf
+const bySeen = [...characters].sort((a, b) => b.episodes.length - a.episodes.length || a.id - b.id);
+const mostSeen = bySeen.slice(0, 8);
+
+const seasons = [...new Set(episodes.map((e) => e.season))].map((season) => {
+  const list = episodes.filter((e) => e.season === season);
+  return { season, list, first: list[0], last: list[list.length - 1] };
+});
+
+const busiest = [...locations]
+  .sort((a, b) => b.residents.length - a.residents.length || a.id - b.id)
+  .slice(0, 6);
+const most = busiest[0]?.residents.length ?? 1;
+
+const statuses = (["Alive", "Dead", "unknown"] as const).map((status) => ({
+  status,
+  n: characters.filter((c) => c.status === status).length,
+}));
+// names the hero field types out: real entries of all three kinds
+const examples = [
+  "Pickle Rick",
+  "Birdperson",
+  "Citadel of Ricks",
+  "Total Rickall",
+  "Squanchy",
+  "Gazorpazorp",
+];
+---
+
+<Base
+  title="Rick and Morty Wiki"
+  description={`An unofficial Rick and Morty wiki: ${number(characters.length)} characters, ${episodes.length} episodes and ${locations.length} locations, searchable in one fast site.`}
+>
+  <section class="hero" aria-labelledby="hero-title" data-portal-hero>
+    <Portal />
+    <div class="wrap hero-inner">
+      <div class="hero-copy">
+        <h1 id="hero-title">Find anyone in the multiverse.</h1>
+        <p class="hero-note">
+          An unofficial Rick and Morty wiki: where everyone comes from, where they were last seen
+          and every episode they turn up in.
+        </p>
+        <HeroSearch client:idle base={href()} examples={examples} total={characters.length} />
+        <p class="hero-counts">
+          <a href={href("characters/")}>{number(characters.length)} characters</a>
+          <a href={href("episodes/")}>{episodes.length} episodes</a>
+          <a href={href("locations/")}>{locations.length} locations</a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap shelves">
+    <section aria-labelledby="most-seen">
+      <div class="shelf-head">
+        <h2 id="most-seen" class="section-title">
+          Seen the most
+        </h2>
+        <a class="button" href={href("characters/?sort=episodes")}>
+          All characters by appearances
+        </a>
+      </div>
+      <ol class="tiles ranked">
+        {mostSeen.map((c) => (
+          <li>
+            <CharacterTile
+              base={href()}
+              id={c.id}
+              name={c.name}
+              status={c.status}
+              species={c.species}
+              meta={`In ${count(c.episodes.length, "episode")}`}
+              headingLevel={3}
+            />
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section aria-labelledby="seasons" class="lazy-section">
+      <div class="shelf-head">
+        <h2 id="seasons" class="section-title">
+          {seasons.length} seasons
+        </h2>
+        <a class="button" href={href("episodes/")}>
+          Every episode
+        </a>
+      </div>
+      <ol class="season-strip">
+        {seasons.map(({ season, list, first, last }) => (
+          <li>
+            <a href={href(`episodes/#season-${season}`)}>
+              <span class="season-no" aria-hidden="true">
+                {season}
+              </span>
+              <span class="season-name">Season {season}</span>
+              <span class="season-meta">
+                {count(list.length, "episode")}, {year(first.airDate)}
+                {year(last.airDate) !== year(first.airDate) && ` to ${year(last.airDate)}`}
+              </span>
+              <span class="season-first">Opens with “{first.name}”</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <div class="pair lazy-section">
+      <section aria-labelledby="busiest">
+        <div class="shelf-head">
+          <h2 id="busiest" class="section-title">
+            Busiest places
+          </h2>
+          <a class="button" href={href("locations/")}>
+            All locations
+          </a>
+        </div>
+        <ol class="busiest">
+          {busiest.map((l) => (
+            <li>
+              <a href={href(`locations/${l.id}/`)}>{l.name}</a>
+              <span class="bar" aria-hidden="true">
+                <span style={`--w:${(l.residents.length / most) * 100}%`} />
+              </span>
+              <span class="n">{count(l.residents.length, "resident")}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section aria-labelledby="alive">
+        <h2 id="alive" class="section-title">
+          Who is still alive
+        </h2>
+        <p class="alive-lead">
+          Of {number(characters.length)} characters, the API counts this many in each state at their
+          last appearance.
+        </p>
+        <div class="stack" aria-hidden="true">
+          {statuses.map((s) => (
+            <span data-status={s.status} style={`--w:${(s.n / characters.length) * 100}%`} />
+          ))}
+        </div>
+        <ul class="legend">
+          {statuses.map((s) => (
+            <li>
+              <span class="status" data-status={s.status}>
+                {s.status === "unknown" ? "Unknown" : s.status}
+              </span>
+              <span class="n">
+                {number(s.n)} ({Math.round((s.n / characters.length) * 100)}%)
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+  </div>
+</Base>
+
+<style>
+  /* the portal's place and size: Portal.astro, the WebGL script and the result card all read these */
+  .hero {
+    --px: 72%;
+    --py: 50%;
+    --pr: clamp(150px, 17vw, 270px);
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+    display: grid;
+    align-items: center;
+    min-height: clamp(560px, 84vh, 780px);
+    margin-top: calc(-1 * clamp(2rem, 1rem + 4vw, 4.5rem));
+    margin-bottom: clamp(2.5rem, 1.5rem + 3vw, 4rem);
+    padding-block: 3rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .hero-copy {
+    display: grid;
+    gap: 1.4rem;
+    max-width: min(40rem, 52%);
+  }
+  h1 {
+    font-size: clamp(2.5rem, 1.4rem + 3.6vw, 4.6rem);
+    font-weight: 650;
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+  }
+  .hero-note {
+    max-width: 34rem;
+    color: var(--ink-soft);
+    font-size: var(--step-1);
+    line-height: 1.5;
+  }
+  .hero-counts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.4rem;
+  }
+  .hero-counts a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    text-decoration: none;
+  }
+  .hero-counts a:hover {
+    color: var(--ink);
+    text-decoration: underline;
+  }
+  .hero :global(.hero-form) {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 3px solid var(--ink);
+  }
+  .hero :global(.hero-form:focus-within) {
+    border-bottom-color: var(--accent);
+  }
+  .hero :global(.hero-form input) {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    padding: 0.1em 0 0.18em;
+    border: 0;
+    background: none;
+    font: 300 clamp(1.7rem, 1rem + 2.2vw, 2.9rem) / 1.1 var(--font-display);
+    letter-spacing: -0.045em;
+    color: var(--ink);
+    caret-color: var(--accent);
+  }
+  .hero :global(.hero-form input::placeholder) {
+    color: color-mix(in srgb, var(--ink-soft) 70%, transparent);
+  }
+  .hero :global(.hero-form input:focus-visible) {
+    outline: none;
+  }
+  .hero :global(.hero-form input::-webkit-search-cancel-button) {
+    display: none;
+  }
+  .hero :global(.hero-go) {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: clamp(52px, 40px + 1.5vw, 64px);
+    aspect-ratio: 1;
+    border: 0;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .hero :global(.hero-go:hover) {
+    background: var(--accent);
+  }
+  .hero :global(.hero-search) {
+    display: grid;
+    gap: 1rem;
+  }
+  .hero :global(.hero-status:empty) {
+    display: none;
+  }
+  .hero :global(.hero-status) {
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .hero :global(.hero-actions) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+  .hero :global(.hero-results) {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+    gap: 0.5rem;
+    padding: 0;
+    list-style: none;
+  }
+  .hero :global(.hero-results a) {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.55rem 0.9rem 0.55rem 0.55rem;
+    border-radius: var(--radius-m);
+    background: color-mix(in srgb, var(--bg-raised) 88%, transparent);
+    border: 1px solid var(--line);
+    text-decoration: none;
+    backdrop-filter: blur(6px);
+  }
+  .hero :global(.hero-results a:hover) {
+    border-color: var(--accent);
+  }
+  .hero :global(.hero-results img),
+  .hero :global(.hero-glyph) {
+    flex: none;
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    object-fit: cover;
+  }
+  .hero :global(.hero-glyph) {
+    display: grid;
+    place-items: center;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font: 600 1rem/1 var(--font-display);
+  }
+  .hero :global(.hero-glyph-l) {
+    border-radius: 50%;
+  }
+  .hero :global(.hero-result-text) {
+    display: grid;
+    min-width: 0;
+  }
+  .hero :global(.hero-result-name) {
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .hero :global(.hero-result-kind) {
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+  }
+  /* the card the portal hands out: centred on the portal, above the canvas */
+  .hero :global(.portal-card) {
+    position: absolute;
+    left: var(--px);
+    top: var(--py);
+    z-index: 1;
+    display: grid;
+    justify-items: center;
+    gap: 0.2rem;
+    width: calc(var(--pr) * 0.95);
+    padding: 0.7rem 0.7rem 1rem;
+    border-radius: var(--radius-l);
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    box-shadow: 0 30px 60px -20px rgb(0 0 0 / 0.55);
+    text-align: center;
+    text-decoration: none;
+    translate: -50% -50%;
+    rotate: -4deg;
+  }
+  .hero :global(.portal-card img) {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: calc(var(--radius-l) - 8px);
+    margin-bottom: 0.5rem;
+  }
+  .hero :global(.portal-card-name) {
+    font-weight: 700;
+    font-size: var(--step-1);
+    line-height: 1.2;
+  }
+  .hero :global(.portal-card-kind) {
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .hero :global(.portal-card) {
+      animation: emerge 700ms cubic-bezier(0.18, 1.2, 0.32, 1) both;
+    }
+    @keyframes emerge {
+      from {
+        opacity: 0;
+        scale: 0.15;
+        rotate: 200deg;
+        filter: blur(6px);
+      }
+      60% {
+        opacity: 1;
+        filter: blur(0);
+      }
+    }
+  }
+  @media (max-width: 900px) {
+    .hero :global(.portal-card) {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .hero :global(.hero-results li) {
+      animation: rise 260ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+    }
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+    }
+  }
+
+  .shelves {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(3.5rem, 2.5rem + 4vw, 6.5rem);
+  }
+  .shelf-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .shelf-head .section-title {
+    margin: 0;
+  }
+  .ranked {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
+  }
+
+  .season-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    gap: 1rem;
+    padding: 0;
+    list-style: none;
+  }
+  .season-strip a {
+    position: relative;
+    display: grid;
+    gap: 0.3rem;
+    height: 100%;
+    padding: 1.3rem 1.3rem 1.4rem;
+    border-radius: var(--radius-l);
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    text-decoration: none;
+    overflow: hidden;
+  }
+  .season-strip a:hover {
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow);
+  }
+  .season-no {
+    font-family: var(--font-display);
+    font-size: 4.5rem;
+    font-weight: 200;
+    line-height: 1;
+    color: var(--accent);
+    margin-bottom: 0.4rem;
+  }
+  .season-name {
+    font-weight: 700;
+    font-size: var(--step-1);
+  }
+  .season-meta,
+  .season-first {
+    color: var(--ink-soft);
+    font-size: var(--step--1);
+  }
+
+  .pair {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: clamp(2.5rem, 2rem + 3vw, 5rem);
+    align-items: start;
+  }
+  .busiest {
+    display: grid;
+    gap: 0.25rem;
+    padding: 0;
+    list-style: none;
+  }
+  .busiest li {
+    display: grid;
+    grid-template-columns: minmax(0, 13rem) minmax(0, 1fr) 7.5rem;
+    align-items: center;
+    gap: 1rem;
+    min-height: 48px;
+  }
+  .busiest a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .bar {
+    height: 10px;
+    border-radius: 999px;
+    background: var(--bg-sunk);
+    overflow: hidden;
+  }
+  .bar span {
+    display: block;
+    width: var(--w);
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--portal-c), var(--portal-b));
+  }
+  .busiest .n {
+    text-align: right;
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .alive-lead {
+    color: var(--ink-soft);
+    margin-bottom: 1.25rem;
+    max-width: 30rem;
+  }
+  .stack {
+    display: flex;
+    gap: 4px;
+    height: 18px;
+  }
+  .stack span {
+    width: var(--w);
+    border-radius: 999px;
+  }
+  .stack [data-status="Alive"] {
+    background: var(--alive);
+  }
+  .stack [data-status="Dead"] {
+    background: var(--dead);
+  }
+  .stack [data-status="unknown"] {
+    background: var(--unknown);
+  }
+  .legend {
+    display: grid;
+    gap: 0.6rem;
+    margin-top: 1.25rem;
+    padding: 0;
+    list-style: none;
+  }
+  .legend li {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .legend .status {
+    font-size: var(--step-0);
+  }
+  .legend .n {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (max-width: 900px) {
+    .hero {
+      --px: 50%;
+      --py: 170px;
+      --pr: clamp(100px, 30vw, 140px);
+      align-items: start;
+      min-height: 0;
+      padding-top: calc(var(--py) + var(--pr) + 2.5rem);
+    }
+    .hero-copy {
+      max-width: none;
+    }
+    .pair {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 560px) {
+    .busiest li {
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-rows: auto auto;
+      gap: 0.35rem 1rem;
+      padding-block: 0.4rem;
+    }
+    .bar {
+      grid-column: 1 / -1;
+      grid-row: 2;
+    }
+  }
+</style>

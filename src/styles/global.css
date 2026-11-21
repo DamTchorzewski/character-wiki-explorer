@@ -1,0 +1,506 @@
+/* Design tokens, reset and the shared pieces of every page.
+   Two themes: the system setting decides, the toggle stores a choice in data-theme on <html>. */
+@import "@fontsource-variable/unbounded/wght.css";
+@import "@fontsource-variable/hanken-grotesk/wght.css";
+
+:root {
+  color-scheme: light;
+  /* lab-glass light: cool mint grey with deep slate ink */
+  --bg: #eef2ef;
+  --bg-raised: #ffffff;
+  --bg-sunk: #e2e9e5;
+  --ink: #0f1f29;
+  --ink-soft: #435460;
+  --line: #cfd9d4;
+  --line-strong: #9fb1a9;
+  --accent: #0b6e4f;
+  --accent-soft: #d5efe2;
+  --focus: #0b6e4f;
+  --alive: #17703a;
+  --dead: #b3261e;
+  --unknown: #56636c;
+  /* the portal: the one loud thing; fills and glows only, never text */
+  --portal-a: #b6f03c;
+  --portal-b: #2fd3c5;
+  --portal-c: #0a8f6a;
+  --portal-glow: rgb(70 210 150 / 0.35);
+  --shadow: 0 1px 2px rgb(15 31 41 / 0.06), 0 12px 32px -12px rgb(15 31 41 / 0.18);
+
+  --font-display: "Unbounded Variable", "Arial Black", system-ui, sans-serif;
+  --font-body: "Hanken Grotesk Variable", "Segoe UI", system-ui, sans-serif;
+
+  /* type scale: a 1.25 ratio from 1rem, display steps fluid */
+  --step--1: 0.875rem;
+  --step-0: 1rem;
+  --step-1: 1.25rem;
+  --step-2: clamp(1.4rem, 1.2rem + 0.8vw, 1.6rem);
+  --step-3: clamp(1.7rem, 1.35rem + 1.6vw, 2.25rem);
+  --step-4: clamp(2.1rem, 1.5rem + 2.8vw, 3.4rem);
+  --step-5: clamp(2.6rem, 1.6rem + 4.6vw, 5.2rem);
+
+  --radius-s: 10px;
+  --radius-m: 18px;
+  --radius-l: 28px;
+  --gutter: clamp(1rem, 0.6rem + 2vw, 2.5rem);
+  --max: 1240px;
+  --header-h: 68px;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  /* night in a dimension where the sky is teal */
+  --bg: #0b1820;
+  --bg-raised: #12232d;
+  --bg-sunk: #0f1e27;
+  --ink: #e7f0ec;
+  --ink-soft: #a3b6b0;
+  --line: #213845;
+  --line-strong: #3b5767;
+  --accent: #9be38a;
+  --accent-soft: #19362f;
+  --focus: #b6f03c;
+  --alive: #7fdc92;
+  --dead: #ff9289;
+  --unknown: #aab6bc;
+  --portal-glow: rgb(120 235 160 / 0.28);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 18px 40px -16px rgb(0 0 0 / 0.6);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0b1820;
+    --bg-raised: #12232d;
+    --bg-sunk: #0f1e27;
+    --ink: #e7f0ec;
+    --ink-soft: #a3b6b0;
+    --line: #213845;
+    --line-strong: #3b5767;
+    --accent: #9be38a;
+    --accent-soft: #19362f;
+    --focus: #b6f03c;
+    --alive: #7fdc92;
+    --dead: #ff9289;
+    --unknown: #aab6bc;
+    --portal-glow: rgb(120 235 160 / 0.28);
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 18px 40px -16px rgb(0 0 0 / 0.6);
+  }
+}
+
+/* reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+* {
+  margin: 0;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-h) + 1rem);
+}
+body {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 var(--step-0) / 1.6 var(--font-body);
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+img {
+  height: auto;
+}
+input,
+button,
+select {
+  font: inherit;
+  color: inherit;
+}
+button {
+  cursor: pointer;
+}
+a {
+  color: inherit;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+}
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+p {
+  text-wrap: pretty;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* layout */
+.wrap {
+  width: min(100% - 2 * var(--gutter), var(--max));
+  margin-inline: auto;
+}
+main {
+  flex: 1;
+  padding-block: clamp(2rem, 1rem + 4vw, 4.5rem) clamp(3rem, 2rem + 4vw, 6rem);
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 100;
+  padding: 0.7rem 1.1rem;
+  border-radius: var(--radius-s);
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 600;
+  text-decoration: none;
+}
+.skip-link:focus {
+  top: 0.75rem;
+}
+
+/* page heading block, shared by the list pages */
+.page-head {
+  display: grid;
+  gap: 0.9rem;
+  margin-bottom: clamp(1.75rem, 1rem + 2vw, 2.75rem);
+  max-width: 46rem;
+}
+.page-head h1 {
+  font-size: var(--step-5);
+  font-weight: 650;
+}
+.page-head p {
+  color: var(--ink-soft);
+  font-size: var(--step-1);
+  line-height: 1.5;
+  max-width: 38rem;
+}
+
+.section-title {
+  font-size: var(--step-3);
+  margin-bottom: 1.25rem;
+}
+
+/* status: a dot and the word, never the colour alone */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  font-weight: 600;
+  font-size: var(--step--1);
+  line-height: 1;
+}
+.status::before {
+  content: "";
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 22%, transparent);
+}
+.status[data-status="Alive"] {
+  color: var(--alive);
+}
+.status[data-status="Dead"] {
+  color: var(--dead);
+}
+.status[data-status="unknown"] {
+  color: var(--unknown);
+}
+
+/* character tiles: portrait first, the name under it */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 168px), 1fr));
+  gap: clamp(0.9rem, 0.5rem + 1.2vw, 1.5rem);
+  padding: 0;
+  list-style: none;
+}
+.tile {
+  position: relative;
+  display: grid;
+  gap: 0.7rem;
+  height: 100%;
+  padding: 0.6rem 0.6rem 0.9rem;
+  border-radius: var(--radius-m);
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  transition:
+    border-color 160ms,
+    box-shadow 160ms;
+}
+.tile:hover {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow);
+}
+.tile:has(a:focus-visible) {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.tile img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: calc(var(--radius-m) - 6px);
+  background: var(--bg-sunk);
+}
+.tile-body {
+  display: grid;
+  gap: 0.35rem;
+  padding-inline: 0.3rem;
+  align-content: start;
+}
+.tile h3,
+.tile-name {
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.3;
+}
+.tile a {
+  text-decoration: none;
+}
+/* the whole tile is the link target */
+.tile a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.tile a:focus-visible {
+  outline: none;
+}
+.tile-facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.7rem;
+  font-size: var(--step--1);
+}
+.tile-species {
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+.tile-meta {
+  color: var(--ink-soft);
+  font-size: var(--step--1);
+  line-height: 1.35;
+}
+
+/* buttons, inputs and chips */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.55rem 1.2rem;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--bg-raised);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background 140ms,
+    border-color 140ms;
+}
+.button:hover {
+  border-color: var(--ink);
+}
+.button-primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+.button-primary:hover {
+  background: color-mix(in srgb, var(--ink) 86%, var(--accent));
+}
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+}
+.field > span,
+.field legend {
+  font-size: var(--step--1);
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.input,
+.select {
+  width: 100%;
+  min-height: 46px;
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--line-strong);
+  background: var(--bg-raised);
+}
+.select {
+  appearance: none;
+  padding-right: 2.4rem;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ink-soft) 50%),
+    linear-gradient(135deg, var(--ink-soft) 50%, transparent 50%);
+  background-position:
+    right 1.15rem center,
+    right 0.8rem center;
+  background-size: 0.36rem 0.36rem;
+  background-repeat: no-repeat;
+}
+.input:hover,
+.select:hover {
+  border-color: var(--ink-soft);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 36px;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  font-size: var(--step--1);
+  font-weight: 600;
+  text-decoration: none;
+}
+a.chip:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* previous / next links at the end of a detail page */
+.pager {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: clamp(2.5rem, 2rem + 2vw, 4rem);
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+.pager a {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius-m);
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+.pager a:hover {
+  border-color: var(--line);
+  background: var(--bg-raised);
+}
+.pager small {
+  color: var(--ink-soft);
+  font-size: var(--step--1);
+}
+.pager strong {
+  font-weight: 700;
+}
+.pager .next {
+  text-align: right;
+  grid-column: 2;
+}
+
+/* long lists below the first screen render lazily */
+.lazy-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+main:focus {
+  outline: none;
+}
+
+/* "All characters" style link back to the list, above a detail page */
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+.back::before {
+  content: "";
+  width: 0.5em;
+  height: 0.5em;
+  border-left: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+.back:hover {
+  color: var(--ink);
+}
+
+/* the name next to the mark: the show's name, then "Wiki" on a portal-green tag */
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: 0.98rem;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--ink);
+}
+.wordmark-wiki {
+  padding: 0.32em 0.55em 0.34em;
+  border-radius: 0.5em;
+  background: var(--portal-a);
+  color: #0f1f29;
+  font-size: 0.8em;
+  letter-spacing: 0;
+  rotate: -4deg;
+}

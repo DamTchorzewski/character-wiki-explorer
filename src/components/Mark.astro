@@ -1,0 +1,34 @@
+---
+// The site's own mark: a magnifying glass whose lens is a portal (a wiki that searches the multiverse).
+// The ring and the handle take the text colour, so the mark works on both themes. Not the show's logo.
+interface Props {
+  size?: number;
+}
+const { size = 32 } = Astro.props;
+const id = `mark-${size}`;
+---
+
+<svg width={size} height={size} viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+  <defs>
+    <radialGradient id={id} cx="0.45" cy="0.42" r="0.62">
+      <stop offset="0" stop-color="#f4ffd9"></stop>
+      <stop offset="0.3" stop-color="#c4f53f"></stop>
+      <stop offset="0.7" stop-color="#2fc58f"></stop>
+      <stop offset="1" stop-color="#0b6e50"></stop>
+    </radialGradient>
+  </defs>
+  <path d="M27.2 27.2 36 36" stroke="currentColor" stroke-width="5.2" stroke-linecap="round"></path>
+  <circle
+    cx="17"
+    cy="17"
+    r="13.4"
+    fill={`url(#${id})`}
+    stroke="currentColor"
+    stroke-width="3"
+  ></circle>
+  <g fill="none" stroke="#0b4f3d" stroke-linecap="round" stroke-width="1.9" opacity="0.8">
+    <path d="M17 8.2a8.8 8.8 0 1 1-8.5 11"></path>
+    <path d="M17 11.6a5.4 5.4 0 1 1-5.2 6.7"></path>
+    <path d="M17 14.8a2.2 2.2 0 1 1-2 3"></path>
+  </g>
+</svg>

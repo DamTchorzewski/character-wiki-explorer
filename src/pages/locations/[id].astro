@@ -1,0 +1,181 @@
+---
+import type { GetStaticPaths } from "astro";
+import CharacterTile from "../../components/CharacterTile";
+import Base from "../../layouts/Base.astro";
+import { getWiki } from "../../lib/api";
+import { count, href, label } from "../../lib/format";
+import type { Character, Location } from "../../lib/types";
+
+export const getStaticPaths = (async () => {
+  const { characters, locations } = await getWiki();
+  const byId = new Map(characters.map((c) => [c.id, c]));
+  return locations.map((location, i) => ({
+    params: { id: String(location.id) },
+    props: {
+      location,
+      residents: location.residents.map((id) => byId.get(id)).filter((c): c is Character => !!c),
+      born: characters.filter((c) => c.origin.id === location.id).length,
+      prev: locations[i - 1] ?? null,
+      next: locations[i + 1] ?? null,
+    },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  location: Location;
+  residents: Character[];
+  born: number;
+  prev: Location | null;
+  next: Location | null;
+}
+
+const { location: l, residents, born, prev, next } = Astro.props;
+const dimension = l.dimension === "unknown" || !l.dimension ? "Unknown" : l.dimension;
+---
+
+<Base
+  title={l.name}
+  description={`${l.name}, a ${(l.type || "place").toLowerCase()} in ${dimension === "Unknown" ? "an unknown dimension" : dimension}, with ${count(residents.length, "known resident")} in Rick and Morty.`}
+>
+  <div class="wrap">
+    <a class="back" href={href("locations/")}>
+      All locations
+    </a>
+
+    <header class="location-head">
+      <div class="orbit" aria-hidden="true">
+        <span></span>
+      </div>
+      <div>
+        <h1>{l.name}</h1>
+        <dl class="facts">
+          <div>
+            <dt>Type</dt>
+            <dd>{label(l.type)}</dd>
+          </div>
+          <div>
+            <dt>Dimension</dt>
+            <dd>{dimension}</dd>
+          </div>
+          <div>
+            <dt>Residents</dt>
+            <dd>{residents.length}</dd>
+          </div>
+          <div>
+            <dt>Origin of</dt>
+            <dd>{count(born, "character")}</dd>
+          </div>
+        </dl>
+      </div>
+    </header>
+
+    <section aria-labelledby="residents">
+      <h2 id="residents" class="section-title">
+        {residents.length ? `Who lives here` : "Nobody is known to live here"}
+      </h2>
+      {residents.length > 0 ? (
+        <ul class="tiles">
+          {residents.map((c, i) => (
+            <li>
+              <CharacterTile
+                base={href()}
+                id={c.id}
+                name={c.name}
+                status={c.status}
+                species={c.species}
+                eager={i < 4}
+              />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="none">
+          The API lists no residents for {l.name}. Characters may still come from here or pass
+          through; open the <a href={href("characters/")}>character list</a> to look for them.
+        </p>
+      )}
+    </section>
+
+    <nav class="pager" aria-label="Other locations">
+      {prev && (
+        <a href={href(`locations/${prev.id}/`)} rel="prev">
+          <small>Previous location</small>
+          <strong>{prev.name}</strong>
+        </a>
+      )}
+      {next && (
+        <a class="next" href={href(`locations/${next.id}/`)} rel="next">
+          <small>Next location</small>
+          <strong>{next.name}</strong>
+        </a>
+      )}
+    </nav>
+  </div>
+</Base>
+
+<style>
+  .location-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(1.5rem, 1rem + 3vw, 4rem);
+    margin-bottom: clamp(2.5rem, 2rem + 3vw, 4.5rem);
+  }
+  /* a planet on a tilted orbit: the location's quiet emblem */
+  .orbit {
+    position: relative;
+    width: clamp(110px, 80px + 8vw, 190px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle at 35% 30%,
+      var(--portal-a),
+      var(--portal-b) 45%,
+      var(--portal-c) 80%
+    );
+    box-shadow: 0 0 50px -8px var(--portal-glow);
+  }
+  .orbit span {
+    position: absolute;
+    inset: 38% -22%;
+    border-radius: 50%;
+    border: 2px solid var(--ink-soft);
+    transform: rotate(-18deg);
+    opacity: 0.55;
+  }
+  h1 {
+    font-size: var(--step-5);
+    font-weight: 650;
+  }
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+    gap: 1rem 2rem;
+    margin-top: 1.5rem;
+  }
+  dt {
+    font-size: var(--step--1);
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  dd {
+    font-size: var(--step-1);
+    font-weight: 600;
+  }
+  .none {
+    max-width: 40rem;
+    padding: 1.5rem;
+    border-radius: var(--radius-m);
+    background: var(--bg-sunk);
+    color: var(--ink-soft);
+  }
+  .none a {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  @media (max-width: 640px) {
+    .location-head {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

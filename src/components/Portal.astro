@@ -1,0 +1,207 @@
+---
+// The home page portal. The disc (an SVG spiral drawn at build time, turned by CSS) is the first paint and the
+// fallback; on the first pointer move, touch, key or scroll, src/scripts/portal.ts draws the living portal over it
+// in WebGL, measured from this same disc.
+// A few characters (their portraits from the API) drift around the rim and lean with the pointer.
+// The portal is decorative; the portraits are links to their pages, named for screen readers only.
+// Its place and size come from --px, --py and --pr on the hero.
+import { avatar, href } from "../lib/format";
+
+// the spiral of the CSS portal: tapered arms of an Archimedean spiral as closed paths
+const C = 100;
+function arm(start: number, maxW: number): string {
+  const outer: string[] = [];
+  const inner: string[] = [];
+  for (let i = 0; i <= 80; i++) {
+    const t = i / 80;
+    const angle = start + t * 1.2 * Math.PI * 2;
+    const r = 96 * t;
+    const w = maxW * t * Math.sin(Math.PI * Math.min(1, t * 1.1));
+    const point = (radius: number) =>
+      `${(C + radius * Math.cos(angle)).toFixed(1)} ${(C + radius * Math.sin(angle)).toFixed(1)}`;
+    outer.push(point(r + w / 2));
+    inner.unshift(point(Math.max(0, r - w / 2)));
+  }
+  return `M${outer.join("L")}L${inner.join("L")}Z`;
+}
+const darkArms = [0, 1, 2].map((i) => arm((i * 2 * Math.PI) / 3, 34));
+const lightArms = [0, 1, 2].map((i) => arm((i * 2 * Math.PI) / 3 + Math.PI / 3, 14));
+
+// angle on the rim (deg, 0 = right, clockwise), size as a share of the radius, depth of the parallax
+const travellers = [
+  { id: 1, name: "Rick Sanchez", angle: -135, size: 0.4, depth: 1 },
+  { id: 2, name: "Morty Smith", angle: 40, size: 0.36, depth: -0.8 },
+  { id: 3, name: "Summer Smith", angle: -48, size: 0.26, depth: 0.5 },
+  { id: 47, name: "Birdperson", angle: 132, size: 0.27, depth: -0.6 },
+  { id: 244, name: "Mr. Poopybutthole", angle: 88, size: 0.24, depth: 0.7 },
+  { id: 265, name: "Pickle Rick", angle: -6, size: 0.22, depth: -0.4 },
+];
+---
+
+<div class="portal" aria-hidden="true">
+  <div class="disc" data-portal-anchor>
+    <svg viewBox="0 0 200 200">
+      <defs>
+        <radialGradient id="portal-body">
+          <stop offset="0" stop-color="#f4ffd9"></stop>
+          <stop offset="0.22" stop-color="#c9f75a"></stop>
+          <stop offset="0.6" stop-color="#2fc58f"></stop>
+          <stop offset="0.92" stop-color="#0b6e50"></stop>
+          <stop offset="1" stop-color="#b6f03c"></stop>
+        </radialGradient>
+        <clipPath id="portal-clip">
+          <circle cx="100" cy="100" r="97"></circle>
+        </clipPath>
+      </defs>
+      <circle cx="100" cy="100" r="97" fill="url(#portal-body)"></circle>
+      <g class="spin" clip-path="url(#portal-clip)">
+        {darkArms.map((d) => (
+          <path d={d} fill="#0a5f46" opacity="0.55" />
+        ))}
+        {lightArms.map((d) => (
+          <path d={d} fill="#eaffb0" opacity="0.5" />
+        ))}
+      </g>
+      <circle cx="100" cy="100" r="97" fill="none" stroke="#c4f53f" stroke-width="4"></circle>
+    </svg>
+  </div>
+  <canvas data-portal-canvas></canvas>
+</div>
+<div class="travellers">
+  {travellers.map((t) => (
+    <a
+      class="traveller"
+      href={href(`characters/${t.id}/`)}
+      style={`--angle:${t.angle}deg;--size-k:${t.size};--depth:${t.depth}`}
+    >
+      <img src={avatar(t.id)} alt="" width="300" height="300" />
+      <span>{t.name}</span>
+    </a>
+  ))}
+</div>
+
+<script>
+  import "../scripts/portal";
+</script>
+
+<style>
+  .portal {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+  canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .disc {
+    position: absolute;
+    left: calc(var(--px) - var(--pr));
+    top: calc(var(--py) - var(--pr));
+    width: calc(var(--pr) * 2);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    filter: blur(1.5px) drop-shadow(0 0 22px var(--portal-glow));
+    transition: opacity 600ms ease;
+  }
+  :global([data-portal="on"]) .disc {
+    opacity: 0;
+  }
+  .disc svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .spin {
+    transform-origin: 50% 50%;
+    transform-box: view-box;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .spin {
+      animation: turn 16s linear infinite;
+    }
+  }
+  @keyframes turn {
+    to {
+      transform: rotate(1turn);
+    }
+  }
+
+  /* each portrait sits on the rim at its own angle (CSS cos and sin), centred on the edge */
+  .travellers {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .traveller {
+    --size: calc(var(--pr) * var(--size-k));
+    position: absolute;
+    left: calc(var(--px) + cos(var(--angle)) * var(--pr) * 1.04 - var(--size) / 2);
+    top: calc(var(--py) + sin(var(--angle)) * var(--pr) * 1.04 - var(--size) / 2);
+    width: var(--size);
+    border-radius: 50%;
+    pointer-events: auto;
+    transition:
+      opacity 300ms ease,
+      scale 300ms ease;
+  }
+  .traveller img {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--bg);
+    box-shadow:
+      0 0 0 2px var(--portal-a),
+      0 0 30px -4px var(--portal-glow),
+      0 18px 30px -14px rgb(0 0 0 / 0.55);
+    background: var(--bg-sunk);
+  }
+  /* the name is for screen readers only */
+  .traveller span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .traveller:hover img {
+    box-shadow:
+      0 0 0 3px var(--portal-a),
+      0 0 50px 0 var(--portal-glow),
+      0 18px 30px -14px rgb(0 0 0 / 0.55);
+  }
+  .traveller:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 4px;
+  }
+  /* while the search hands out a card, the travellers step aside */
+  :global(.hero:has(.portal-card)) .traveller {
+    opacity: 0;
+    scale: 0.85;
+    pointer-events: none;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .traveller {
+      translate: calc(var(--mx, 0) * var(--depth) * 16px) calc(var(--my, 0) * var(--depth) * 16px);
+    }
+    .traveller img {
+      animation: drift 7s ease-in-out infinite;
+    }
+    .traveller:nth-child(2n) img {
+      animation-delay: -3.5s;
+    }
+    .traveller:nth-child(3n) img {
+      animation-duration: 9s;
+    }
+  }
+  @keyframes drift {
+    50% {
+      transform: translateY(-6px) rotate(-3deg);
+    }
+  }
+</style>

@@ -1,0 +1,99 @@
+---
+import { href } from "../lib/format";
+import Mark from "./Mark.astro";
+---
+
+<footer class="site-footer">
+  <div class="wrap grid">
+    <div class="about">
+      <a class="brand" href={href()}>
+        <Mark size={30} />
+        <span class="wordmark">
+          <span class="wordmark-name">Rick and Morty</span>
+          <span class="wordmark-wiki">Wiki</span>
+        </span>
+      </a>
+      <p>
+        An unofficial fan wiki of Rick and Morty. Characters, episodes, locations and portraits come
+        from the public{" "}
+        <a href="https://rickandmortyapi.com/" rel="noopener">
+          Rick and Morty API
+        </a>
+      </p>
+      <p>
+        The show and its characters belong to their owners; this site is not affiliated with them.
+      </p>
+    </div>
+    <nav aria-label="Footer">
+      <ul>
+        <li>
+          <a href={href("characters/")}>Characters</a>
+        </li>
+        <li>
+          <a href={href("episodes/")}>Episodes</a>
+        </li>
+        <li>
+          <a href={href("locations/")}>Locations</a>
+        </li>
+        <li>
+          <a href="https://github.com/DamTchorzewski/rick-and-morty-wiki" rel="noopener">
+            Source code on GitHub
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--line);
+    background: var(--bg-sunk);
+    padding-block: 2.5rem 3rem;
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 34rem) auto;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+  .about {
+    display: grid;
+    gap: 0.9rem;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: fit-content;
+    font-family: var(--font-display);
+    font-weight: 650;
+    font-size: 0.95rem;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  ul {
+    display: grid;
+    gap: 0.15rem;
+    padding: 0;
+    list-style: none;
+  }
+  ul a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  ul a:hover {
+    text-decoration: underline;
+  }
+  @media (max-width: 700px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

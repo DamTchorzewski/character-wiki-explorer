@@ -56,4 +56,4 @@ Standard: `reops/standards/github-settings.md`.
 | Default branch                           | `main`                                                                                |
 
 No branch ruleset (decision of 2026-11-19, see the standard). The old `master` branch (the last Create React App build)
-is kept until the owner deletes it.
+and the merged working branches were deleted on 2026-11-21.

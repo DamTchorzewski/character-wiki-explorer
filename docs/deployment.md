@@ -47,5 +47,5 @@ it the usual way, or re-run an earlier successful run of the workflow on `main`.
 ## Before 2026-11-21
 
 The repository was a Create React App project published by `gh-pages` to the `master` branch (Pages source: branch
-`master`). The Pages source is now **GitHub Actions**; the old `master` branch holds only the last CRA build and is no
-longer used.
+`master`). The Pages source is now **GitHub Actions**; the old `master` branch with the last CRA build
+was deleted on 2026-11-21.

@@ -55,5 +55,5 @@ Standard: `reops/standards/github-settings.md`.
 | Settings → Code security                 | Dependabot alerts and security updates, secret scanning and push protection           |
 | Default branch                           | `main`                                                                                |
 
-No branch ruleset (decision of 2026-11-19, see the standard). The old `master` branch (the last Create React App build)
-and the merged working branches were deleted on 2026-11-21.
+Branch rulesets (2026-11-25, the solo profile of the standard): `Protect history`, `Protect main` and `Protect develop`.
+The old `master` branch (the last Create React App build) and the merged working branches were deleted on 2026-11-21.
